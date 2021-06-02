@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  api:
+    container_name: avatar-resizer_api
+    build:
+      context: ./
+      dockerfile: ./.docker/api/Dockerfile
+    environment:
+      PORT: 3000
+    ports:
+      - 3000:3000
+    volumes:
+      - ./api:/var/www/app
+    command:
+      sh -c 'yarn install && yarn dev'
+    networks:
+      - resizer
+
+  db:
+    image: postgres:13.3
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=db
+      - DATABASE_HOST=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - resizer
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    networks:
+      - resizer
+
+volumes:
+  db:
+
+networks:
+  resizer:
