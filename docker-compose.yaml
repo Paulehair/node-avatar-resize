@@ -17,8 +17,15 @@ services:
     networks:
       - resizer
 
+  redis-server: 
+    image: redis:6.2
+    container_name: avatar-resizer_redis
+    networks:
+      - resizer
+
   db:
     image: postgres:13.3
+    container_name: avatar-resizer_db
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
@@ -32,7 +39,8 @@ services:
       - resizer
 
   adminer:
-    image: adminer
+    image: adminer:4.8.1
+    container_name: avatar-resizer_adminer
     restart: always
     ports:
       - 8080:8080
