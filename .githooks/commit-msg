@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # regex to validate in commit msg
-commit_regex='^((feat|fix|doc|add|update|delete) ?(\([A-z]+\))?: .+)(\.)?|Merge.+'
+commit_regex='^(feat|fix|doc|add|update|delete)(\(.+\))?: .+|Merge.+'
 
 # if the commit message is different from the regex
 if ! grep -iqE "$commit_regex" "$1"; then
