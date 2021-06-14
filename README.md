@@ -42,12 +42,80 @@ You should call your branch feature|bugfix|improvement|release|hotfix|support/br
 * docker 
 * docker-compose 
 
+### Start working on project
+
 If you are cloning project for the first time, run
+```
+make init
+```
 
-`make init`
-
-To start working on project run
-
-`make dev`
+To start working on project run :
+```
+make dev
+```
 
 The app might crash the first time you run it. Simply kill the server using Ctrl-C, and restart it.
+
+If you want logs displayed on terminal run :
+```
+make logs
+```
+
+To stop containers run :
+```
+make stop
+```
+
+### Docker
+
+There are 5 containers running.
+
+#### node:14.17
+
+For the api. Available on localhost:3000
+
+#### redis:6.2 
+
+For caching. 
+
+##### client connections:
+
+* host: 'redis-server'
+* port: 6379
+
+#### rabbitmq:3-management
+
+Go to localhost:15672 and connect with admin credentials if you want to manage/monitor rabbitmq via UI.
+
+##### client connections:
+
+* host: 'beautiful-rabbit'
+* port: 5672
+
+Admin user :
+* user: admin
+* password: rabbitmq-admin
+
+API user :
+* user: api-usr
+* password: rabbitmq-api-pwd
+
+Worker user : 
+* user: worker-usr
+* password: rabbitmq-worker-pwd
+
+You can check rabbitmq logs in .docker/rabbitmq/logs
+
+#### postgres:13.3
+
+##### client connections:
+
+* host: 'postgres'
+* port: 5432
+* user: root
+* password: root
+* db: db
+
+#### adminer:4.8.1
+
+To manage database with a UI, go to localhost:8080.
