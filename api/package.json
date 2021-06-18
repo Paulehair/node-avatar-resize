@@ -6,7 +6,7 @@
   "scripts": {
     "start:dev": "nodemon dist/index.js",
     "build:dev": "tsc --watch --preserveWatchOutput",
-    "dev": "concurrently \"npm:build:dev\" \"npm:start:dev\""
+    "start": "concurrently \"yarn:build:dev\" \"yarn:start:dev\""
   },
   "dependencies": {
     "axios": "^0.21.1",

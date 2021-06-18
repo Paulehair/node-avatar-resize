@@ -2,13 +2,13 @@ FROM node:14.17 as base
 
 WORKDIR /var/www/app
 COPY package*.json /
-EXPOSE 3000
+EXPOSE 3001
 
 FROM base as production
 ENV NODE_ENV=production
 RUN npm ci
 COPY . .
-CMD ["yarn", "build"]
+CMD ["node", "server.js"]
 
 FROM base as dev
 ENV NODE_ENV=development

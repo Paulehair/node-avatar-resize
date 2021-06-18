@@ -10,7 +10,8 @@ const app = express();
 
 const client = redis.createClient({
   host: 'redis-server',
-  port: 6379
+  port: 6379,
+  password: 'pwd-redis'
 });
 
 const getAsync = util.promisify(client.get).bind(client);

@@ -3,23 +3,52 @@ version: "3.8"
 services:
   api:
     container_name: avatar-resizer_api
+    hostname: api
     build:
       context: ./
       dockerfile: ./.docker/api/Dockerfile
+      target: dev
     environment:
       PORT: 3000
+      NODE_ENV: development
     ports:
       - 3000:3000
     volumes:
       - ./api:/var/www/app
     command:
-      sh -c 'yarn install && yarn dev'
+      yarn start
     networks:
       - resizer
 
+  worker:
+    container_name: avatar-resizer_worker
+    hostname: worker
+    build:
+      context: ./
+      dockerfile: ./.docker/worker/Dockerfile
+      target: dev
+    environment:
+      PORT: 3001
+      NODE_ENV: development
+    ports:
+      - 3001:3001
+    volumes:
+      - ./worker:/var/www/app
+    command: 
+      yarn start
+    networks:
+      - resizer
+    
   redis-server: 
     image: redis:6.2
+    hostname: redis-server
     container_name: avatar-resizer_redis
+    ports: 
+      - 6379:6379
+    volumes: 
+      - ./.docker/redis/etc/redis.conf:/usr/local/etc/redis/redis.conf
+    command:
+      redis-server /usr/local/etc/redis/redis.conf
     networks:
       - resizer
   
