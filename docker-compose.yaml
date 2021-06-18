@@ -22,6 +22,20 @@ services:
     container_name: avatar-resizer_redis
     networks:
       - resizer
+  
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: beautiful-rabbit
+    ports: 
+      - 15672:15672
+      - 5672:5672
+    volumes:
+      - ./.docker/rabbitmq/etc/definitions.json:/etc/rabbitmq/definitions.json
+      - ./.docker/rabbitmq/etc/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./.docker/rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+      - ./.docker/rabbitmq/logs:/var/log/rabbitmq/log
+    networks:
+      - resizer
 
   db:
     image: postgres:13.3
