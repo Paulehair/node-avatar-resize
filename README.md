@@ -68,11 +68,25 @@ make stop
 
 ### Docker
 
-There are 5 containers running.
+There are 6 containers running.
 
-#### node:14.17
+#### API : node:14.17
 
-For the api. Available on localhost:3000
+Available on localhost:3000
+
+##### client connections:
+
+* host: 'api'
+* port: 3000
+
+#### Worker : node:14.17
+
+Available on localhost:3001
+
+##### client connections:
+
+* host: 'worker'
+* port: 3001
 
 #### redis:6.2 
 
@@ -82,6 +96,7 @@ For caching.
 
 * host: 'redis-server'
 * port: 6379
+* password: redis-pwd
 
 #### rabbitmq:3-management
 
@@ -108,14 +123,4 @@ You can check rabbitmq logs in .docker/rabbitmq/logs
 
 #### postgres:13.3
 
-##### client connections:
-
-* host: 'postgres'
-* port: 5432
-* user: root
-* password: root
-* db: db
-
-#### adminer:4.8.1
-
-To manage database with a UI, go to localhost:8080.
+To manage database with a UI, go to localhost:8080. You can import users via UI using data/database.sql
