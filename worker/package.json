@@ -6,7 +6,7 @@
   "scripts": {
     "init": "node init.js",
     "consume": "nodemon consumer.js",
-    "produce": "nodemon producer.js"
+    "produce": "nodemon fixtures.js"
   },
   "author": "",
   "license": "ISC",
