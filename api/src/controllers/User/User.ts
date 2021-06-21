@@ -1,26 +1,25 @@
-import { Request, Response } from 'express';
-import { CrudController } from '../CrudController';
-import redis from 'redis'
+import fs from 'fs'
+import path from 'path'
 import multer from 'multer'
+import { Request, Response } from 'express';
 
-import {User} from '../../models/User'
-import { json } from 'body-parser';
-import { insertUser } from './queries';
+import { CrudController } from '../CrudController';
+import { User } from '../../models/User'
+
+import * as redisUtils from '../../middlewares/redis'
+import * as queries from './queries';
 
 const upload = multer({
   dest:"./temp"
 })
 
 export class UserController extends CrudController {
-  public create(req, res: Response): void {
-    const fs = require('fs')
-    const path = req.file.path
+  public create(req:any, res: Response): void {
+    const filepath = path.normalize(req.file.path)
+    const errors:[string?] = []
 
-    fs.readFile(path, function(fileErr, fileData) {
-      if (fileErr) {
-        res.json("Error reading file")
-        return
-      }
+    fs.readFile(filepath, (fileErr:any, fileData:any) => {
+      if (fileErr) errors.push("Error reading file")
 
       const imgData = Buffer.from(fileData).toString('base64')
 
@@ -30,45 +29,37 @@ export class UserController extends CrudController {
         email: req.body.email
       }
 
-      insertUser(newUser)
-        .then((dbRes) => {
+      queries.insertUser(newUser)
+        .then((dbRes:any) => {
           const userID = dbRes.rows[0].id
-          const client = redis.createClient({
-            host: 'redis-server',
-            port: 6379,
-            password: 'pwd-redis'
-          });
-      
-          client.set(userID, imgData, (setErr, rep) => {
-            if (setErr) {
-              res.json("Cannot set in redis")
-              return
-            }
-            console.log(rep)
+
+          redisUtils.setImageInCache(userID, imgData)
+
+          fs.unlink(filepath, (unlinkErr:any) => {
+            if (unlinkErr) errors.push("Cannot remove file from temp folder")
           })
-    
-          client.get(userID, (getErr, rep) => {
-            if (getErr) {
-              res.json("Cannot get in redis")
-              return
-            }
-            res.json(newUser)
+
+          res.json({
+            errors: errors,
+            data: newUser
           })
-          fs.unlink(path, unlinkErr => {
-            if (unlinkErr) {
-              res.json("Cannot remove file in serv")
-              return
-            }
+        }).catch((err:string) => {
+          errors.push(err)
+          res.json({
+            errors: errors,
+            data: {}
           })
         })
-        .catch((err) => {
-          console.log(err)
-        })      
     })
   }
 
   public read(req: Request<import("express-serve-static-core").ParamsDictionary>, res: Response): void {
-    res.json({ message: 'GET /user request received' });
+    const userID:string = req.query.id?.toString() || '-1'
+
+    queries.getUser(parseInt(userID)).then((user:any) => {
+      // redisUtils.getImageFromCache(user.id)
+      res.json(user);
+    })
   }
 
   public update(req: Request<import("express-serve-static-core").ParamsDictionary>, res: Response): void {
