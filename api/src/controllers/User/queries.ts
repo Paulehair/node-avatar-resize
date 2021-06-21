@@ -17,9 +17,10 @@ const usersRowsToArray = (rows:[]) => {
         const row = item.row.split(',')
         
         res.push({
-            id: parseInt(row[0].slice(1,2)),
+            id: parseInt(row[0].slice(1,row[0].length)),
             username: row[1],
-            email: row[2]
+            email: row[2],
+            avatar: row[3] !== ')' ? row[3] : null
         })
     })
 
@@ -39,10 +40,10 @@ export const insertUser = (user:User):any => {
     })
 }
 
-export const getUser = (userID:Number = -1):any => {
+export const getUser = (userID:Number):any => {
     return new Promise((resolve, reject) => {
-        const query = `SELECT (id, username, email, avatar) FROM "user" ${userID !== -1 ? 'WHERE id=$1' : ''}`
-        const values = userID !== -1 ? [userID] : []
+        const query = `SELECT (id, username, email, avatar) FROM "user" WHERE id=$1`
+        const values = [userID]
 
         pool.query(query, values, (err:any, res:any) => {
             if (err) reject(err)

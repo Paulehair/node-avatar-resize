@@ -8,20 +8,20 @@ const client = redis.createClient({
 
 
 export const setImageInCache = (imgID:string, imgData:string):any => {
-    return client.set(imgID, imgData, (setErr, rep) => {
-        if (setErr) return
-
-        console.log('redis:', rep)
+    return new Promise((resolve, reject) => {
+        client.set(imgID, imgData, (err, rep) => {
+            if (err) reject(err)
+            resolve(rep)
+        })
     })
 }
 
 
 export const getImageFromCache = (imgID:string):any => {
-    return client.get(imgID, (getErr, rep) => {
-        if (getErr) {
-            return
-        }
-
-        console.log('redis:', rep)
+    return new Promise((resolve, reject) => {
+        client.get(imgID, (err, rep) => {
+            if (err) reject(err)
+            resolve(rep)
+        })
     })
 }
