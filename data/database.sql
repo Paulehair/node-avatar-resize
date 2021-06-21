@@ -7,7 +7,7 @@ CREATE TABLE "public"."user" (
     "username" character varying(50) NOT NULL,
     "password" character varying(50) NOT NULL,
     "email" character varying(255) NOT NULL,
-    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
+    "avatar" character varying(255)
 ) WITH (oids = false);
 
 INSERT INTO "user" ("id", "username", "password", "email") VALUES

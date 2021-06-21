@@ -5,6 +5,7 @@ import multer from 'multer'
 
 import {User} from '../../models/User'
 import { json } from 'body-parser';
+import { insertUser } from './queries';
 
 const upload = multer({
   dest:"./temp"
@@ -15,8 +16,8 @@ export class UserController extends CrudController {
     const fs = require('fs')
     const path = req.file.path
 
-    fs.readFile(path, function(err, fileData) {
-      if (err) {
+    fs.readFile(path, function(fileErr, fileData) {
+      if (fileErr) {
         res.json("Error reading file")
         return
       }
@@ -24,40 +25,45 @@ export class UserController extends CrudController {
       const imgData = Buffer.from(fileData).toString('base64')
 
       const newUser: User = {
-        id: null,
         username: req.body.username,
         password: req.body.password,
         email: req.body.email
       }
-  
-      const client = redis.createClient({
-        host: 'redis-server',
-        port: 6379,
-        password: 'pwd-redis'
-      });
-  
-      client.set(newUser.email, imgData, (err, rep) => {
-        if (err) {
-          res.json("Cannot set in redis")
-          return
-        }
-        console.log(rep)
-      })
 
-      client.get(newUser.email, (err, rep) => {
-        if (err) {
-          res.json("Cannot get in redis")
-          return
-        }
-        res.json(newUser)
-      })
-    })
+      insertUser(newUser)
+        .then((dbRes) => {
+          const userID = dbRes.rows[0].id
+          const client = redis.createClient({
+            host: 'redis-server',
+            port: 6379,
+            password: 'pwd-redis'
+          });
+      
+          client.set(userID, imgData, (setErr, rep) => {
+            if (setErr) {
+              res.json("Cannot set in redis")
+              return
+            }
+            console.log(rep)
+          })
     
-    fs.unlink(path, err => {
-      if (err) {
-        res.json("Cannot remove file in serv")
-        return
-      }
+          client.get(userID, (getErr, rep) => {
+            if (getErr) {
+              res.json("Cannot get in redis")
+              return
+            }
+            res.json(newUser)
+          })
+          fs.unlink(path, unlinkErr => {
+            if (unlinkErr) {
+              res.json("Cannot remove file in serv")
+              return
+            }
+          })
+        })
+        .catch((err) => {
+          console.log(err)
+        })      
     })
   }
 
