@@ -1,12 +1,18 @@
 
 import express, { Request, Response } from 'express';
 import { userController } from '../../controllers';
+import multer from 'multer'
+
 
 export const router = express.Router({
     strict: true
 });
 
-router.post('/', (req: Request, res: Response) => {
+const upload = multer({
+    dest:"./src/temp"   
+})
+
+router.post('/', upload.single('avatar'), (req: Request, res: Response) => {
     userController.create(req, res);
 });
 

@@ -96,7 +96,7 @@ For caching.
 
 * host: 'redis-server'
 * port: 6379
-* password: redis-pwd
+* password: pwd-redis
 
 #### rabbitmq:3-management
 
