@@ -1,28 +1,28 @@
+import fs from 'fs'
+import path from 'path'
 import { Request, Response } from 'express';
+
 import { CrudController } from '../CrudController';
-import redis from 'redis'
-import multer from 'multer'
+import { User } from '../../models/User';
 
-import {User} from '../../models/User'
-import { json } from 'body-parser';
-import { insertUser } from './queries';
+import * as redisUtils from '../../middlewares/redis';
+import * as mqUtils from '../../middlewares/queue';
+import * as queries from './queries';
 
-const upload = multer({
-  dest:"./temp"
-})
+
+const makeUserResponse = (user:Object, error:string, res:Response) => {
+  res.json({
+    error: error,
+    data: user
+  });
+}
 
 export class UserController extends CrudController {
-  public create(req, res: Response): void {
-    const fs = require('fs')
-    const path = req.file.path
+  public create(req: any, res: Response): void {
+    const filepath = path.normalize(req.file.path)
 
-    fs.readFile(path, function(fileErr, fileData) {
-      if (fileErr) {
-        res.json("Error reading file")
-        return
-      }
-
-      const imgData = Buffer.from(fileData).toString('base64')
+    fs.readFile(filepath, { encoding: 'base64' }, (fileErr: any, imgData: string) => {
+      if (fileErr) makeUserResponse({}, "Error reading file: "+fileErr, res)
 
       const newUser: User = {
         username: req.body.username,
@@ -30,45 +30,50 @@ export class UserController extends CrudController {
         email: req.body.email
       }
 
-      insertUser(newUser)
-        .then((dbRes) => {
+      queries.insertUser(newUser)
+        .then((dbRes: any) => {
           const userID = dbRes.rows[0].id
-          const client = redis.createClient({
-            host: 'redis-server',
-            port: 6379,
-            password: 'pwd-redis'
-          });
-      
-          client.set(userID, imgData, (setErr, rep) => {
-            if (setErr) {
-              res.json("Cannot set in redis")
-              return
-            }
-            console.log(rep)
-          })
-    
-          client.get(userID, (getErr, rep) => {
-            if (getErr) {
-              res.json("Cannot get in redis")
-              return
-            }
-            res.json(newUser)
-          })
-          fs.unlink(path, unlinkErr => {
-            if (unlinkErr) {
-              res.json("Cannot remove file in serv")
-              return
-            }
-          })
+
+          mqUtils.addImageToQueue(userID, imgData)
+
+          redisUtils.setImageInCache(`tempimg_${userID}`, imgData)
+            .then(() => {
+              fs.unlink(filepath, (unlinkErr: any) => {
+                if (unlinkErr) makeUserResponse({}, "Error removing file: "+unlinkErr, res)
+              })
+            })
+            .catch((cacheErr: string) => {
+              makeUserResponse({}, "Error caching avatar", res)
+            })
+          newUser.id = userID
+          makeUserResponse(newUser, null, res)
+        }).catch((dbErr: string) => {
+          makeUserResponse({}, "Error inserting user: "+dbErr, res)
         })
-        .catch((err) => {
-          console.log(err)
-        })      
     })
   }
 
   public read(req: Request<import("express-serve-static-core").ParamsDictionary>, res: Response): void {
-    res.json({ message: 'GET /user request received' });
+    const userID:any = req.query.id
+
+    if (userID) {
+      queries.getUser(userID).then((user:any) => {
+        if (user[0].avatar == null) {
+          redisUtils.getImageFromCache(`tempimg_${userID}`)
+            .then((img: string) => {
+              user[0].avatar = img
+              makeUserResponse(user[0], null, res)
+            })
+            .catch((cacheErr:string) => {
+              makeUserResponse({}, "Error getting avatar from cache: "+cacheErr, res)
+            })
+        } else {
+          makeUserResponse(user[0], null, res)
+        }
+      })
+    } else {
+      makeUserResponse({}, "No ID provided.", res)
+    }
   }
 
   public update(req: Request<import("express-serve-static-core").ParamsDictionary>, res: Response): void {

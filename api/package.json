@@ -9,12 +9,15 @@
     "start": "concurrently \"yarn:build:dev\" \"yarn:start:dev\""
   },
   "dependencies": {
+    "amqplib": "^0.8.0",
     "axios": "^0.21.1",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "multer": "^1.4.2",
     "pg": "^8.6.0",
     "redis": "^3.1.2",
-    "typescript": "^4.3.2"
+    "typescript": "^4.3.2",
+    "util": "^0.12.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.12",
