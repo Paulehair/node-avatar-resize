@@ -4,9 +4,8 @@
   "description": "",
   "main": "consumer.js",
   "scripts": {
-    "init": "node init.js",
-    "consume": "nodemon consumer.js",
-    "produce": "nodemon fixtures.js"
+    "start": "node consumer.js",
+    "test": "node test.js"
   },
   "author": "",
   "license": "ISC",
