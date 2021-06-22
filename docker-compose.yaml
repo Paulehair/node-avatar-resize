@@ -8,13 +8,12 @@ services:
       context: ./
       dockerfile: ./.docker/api/Dockerfile
       target: dev
-    environment:
-      PORT: 3000
-      NODE_ENV: development
+    env_file: ./api/.env
     ports:
       - 3000:3000
     volumes:
       - ./api:/var/www/app
+      - output:/var/www/app/output
     command:
       yarn start
     networks:
@@ -27,13 +26,17 @@ services:
       context: ./
       dockerfile: ./.docker/worker/Dockerfile
       target: dev
-    environment:
-      PORT: 3001
-      NODE_ENV: development
+    env_file: ./worker/.env
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - db
+      - redis-server
     ports:
       - 3001:3001
     volumes:
       - ./worker:/var/www/app
+      - output:/var/www/app/output
     command: 
       yarn start
     networks:
@@ -65,10 +68,18 @@ services:
       - ./.docker/rabbitmq/logs:/var/log/rabbitmq/log
     networks:
       - resizer
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   db:
-    image: postgres:13.3
     container_name: avatar-resizer_db
+    build:
+      context: ./
+      dockerfile: ./.docker/postgres/Dockerfile
+    hostname: postgres
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
@@ -94,6 +105,7 @@ services:
 
 volumes:
   db:
+  output: 
 
 networks:
   resizer:

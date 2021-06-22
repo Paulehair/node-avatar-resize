@@ -1,9 +1,9 @@
 import redis from 'redis'
 
 const client = redis.createClient({
-    host: 'redis-server',
-    port: 6379,
-    password: 'pwd-redis'
+  host: process.env.REDIS_HOST,
+  password: process.env.REDIS_PASSWORD,
+  port: process.env.REDIS_PORT
 });
 
 
