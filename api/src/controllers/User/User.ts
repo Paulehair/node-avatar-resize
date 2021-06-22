@@ -41,7 +41,7 @@ export class UserController extends CrudController {
                 if (unlinkErr) makeUserResponse({}, "Error removing file: "+unlinkErr, res)
               })
               newUser.id = userID
-              makeUserResponse(newUser, null, res)
+              makeUserResponse(newUser, "null", res)
             })
             .catch((cacheErr: string) => {
               makeUserResponse({}, "Error caching avatar", res)
@@ -61,13 +61,13 @@ export class UserController extends CrudController {
           redisUtils.getImageFromCache(`tempimg_${userID}`)
             .then((img: string) => {
               user[0].avatar = img
-              makeUserResponse(user[0], null, res)
+              makeUserResponse(user[0], "null", res)
             })
             .catch((cacheErr:string) => {
               makeUserResponse({}, "Error getting avatar from cache: "+cacheErr, res)
             })
         } else {
-          makeUserResponse(user[0], null, res)
+          makeUserResponse(user[0], "null", res)
         }
       })
     } else {

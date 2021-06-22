@@ -5,8 +5,8 @@ services:
     container_name: avatar-resizer_api
     hostname: api
     build:
-      context: ./
-      dockerfile: ./.docker/api/Dockerfile
+      context: ./api
+      dockerfile: ../.docker/api/Dockerfile
       target: dev
     env_file: ./api/.env
     ports:
@@ -23,8 +23,8 @@ services:
     container_name: avatar-resizer_worker
     hostname: worker
     build:
-      context: ./
-      dockerfile: ./.docker/worker/Dockerfile
+      context: ./worker
+      dockerfile: ../.docker/worker/Dockerfile
       target: dev
     env_file: ./worker/.env
     restart: on-failure
