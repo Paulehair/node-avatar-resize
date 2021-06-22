@@ -1,7 +1,7 @@
 FROM node:14.17 as base
 
 WORKDIR /var/www/app
-COPY package*.json /
+COPY package*.json .
 EXPOSE 3001
 
 FROM base as dev

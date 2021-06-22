@@ -27,7 +27,7 @@ services:
       dockerfile: ./.docker/worker/Dockerfile
       target: dev
     env_file: ./worker/.env
-    restart: on-failure
+    restart: always
     depends_on:
       - rabbitmq
       - db
