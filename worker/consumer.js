@@ -37,15 +37,11 @@ const updateDb = (id, data) => {
 
 const resizeImage = async (id) => {
   let image = await get(`user_${id}_avatar`);
-  console.log("[x] retrieve item from redis cache");
   if (!image) return;
-  image = image.split(";base64,");
-  const mime = image[0];
-  const data = image[1];
+  console.log("[x] retrieve item from redis cache");
 
-  let cropedImage = await transform(data);
+  let cropedImage = await transform(image);
   console.log("[x] reduced size transformation done");
-  croppedImage = `${mime};base64,${cropedImage.toString("base64")}`;
   await updateDb(id, croppedImage);
   console.log("[x] user " + id + " updated");
   await del(`user_${id}_avatar`);
