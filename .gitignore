@@ -137,3 +137,6 @@ dist
 # rabbitmq
 .docker/rabbitmq/data
 .docker/rabbitmq/logs
+
+#storage
+./*/output

@@ -5,13 +5,13 @@ const { promisify } = require("util");
 const amqp = require("amqplib/callback_api");
 
 const client = redis.createClient({
-    host: 'redis-server',
-    port: 6379,
-    password: 'pwd-redis'
+    host: process.env.REDIS_HOST,
+    password: process.env.REDIS_PASSWORD,
+    port: process.env.REDIS_PORT
 });
 
 const set = promisify(client.set).bind(client);
-const amqp_url = 'amqp://api-usr:rabbitmq-api-pwd@beautiful-rabbit:5672';
+const amqp_url = process.env.AMQP_URL;
 
 export const addImageToQueue = async (userID: Number, image: string) => {
     const on_open = async (err: string, ch: any) => {

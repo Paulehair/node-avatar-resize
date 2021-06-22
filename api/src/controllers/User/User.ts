@@ -9,7 +9,6 @@ import * as redisUtils from '../../middlewares/redis';
 import * as mqUtils from '../../middlewares/queue';
 import * as queries from './queries';
 
-
 const makeUserResponse = (user:Object, error:string, res:Response) => {
   res.json({
     error: error,
@@ -41,12 +40,12 @@ export class UserController extends CrudController {
               fs.unlink(filepath, (unlinkErr: any) => {
                 if (unlinkErr) makeUserResponse({}, "Error removing file: "+unlinkErr, res)
               })
+              newUser.id = userID
+              makeUserResponse(newUser, null, res)
             })
             .catch((cacheErr: string) => {
               makeUserResponse({}, "Error caching avatar", res)
             })
-          newUser.id = userID
-          makeUserResponse(newUser, null, res)
         }).catch((dbErr: string) => {
           makeUserResponse({}, "Error inserting user: "+dbErr, res)
         })
