@@ -1,0 +1,111 @@
+version: "3.8"
+
+services:
+  api:
+    container_name: avatar-resizer_api
+    hostname: api
+    build:
+      context: ./api
+      dockerfile: ../.docker/api/Dockerfile
+      target: dev
+    env_file: ./api/.env
+    ports:
+      - 3000:3000
+    volumes:
+      - ./api:/var/www/app
+      - output:/var/www/app/output
+    command:
+      yarn start
+    networks:
+      - resizer
+
+  worker:
+    container_name: avatar-resizer_worker
+    hostname: worker
+    build:
+      context: ./worker
+      dockerfile: ../.docker/worker/Dockerfile
+      target: dev
+    env_file: ./worker/.env
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - db
+      - redis-server
+    ports:
+      - 3001:3001
+    volumes:
+      - ./worker:/var/www/app
+      - output:/var/www/app/output
+    command: 
+      yarn start
+    networks:
+      - resizer
+    
+  redis-server: 
+    image: redis:6.2
+    hostname: redis-server
+    container_name: avatar-resizer_redis
+    ports: 
+      - 6379:6379
+    volumes: 
+      - ./.docker/redis/etc/redis.conf:/usr/local/etc/redis/redis.conf
+    command:
+      redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - resizer
+  
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: beautiful-rabbit
+    ports: 
+      - 15672:15672
+      - 5672:5672
+    volumes:
+      - ./.docker/rabbitmq/etc/definitions.json:/etc/rabbitmq/definitions.json
+      - ./.docker/rabbitmq/etc/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      - ./.docker/rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+      - ./.docker/rabbitmq/logs:/var/log/rabbitmq/log
+    networks:
+      - resizer
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  db:
+    container_name: avatar-resizer_db
+    build:
+      context: ./
+      dockerfile: ./.docker/postgres/Dockerfile
+    hostname: postgres
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=db
+      - DATABASE_HOST=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - resizer
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: avatar-resizer_adminer
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+    networks:
+      - resizer
+
+volumes:
+  db:
+  output: 
+
+networks:
+  resizer:
