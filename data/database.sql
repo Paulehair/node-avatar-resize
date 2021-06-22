@@ -7,11 +7,5 @@ CREATE TABLE "public"."user" (
     "username" character varying(50) NOT NULL,
     "password" character varying(50) NOT NULL,
     "email" character varying(255) NOT NULL,
-    "avatar" character varying(255)
+    "avatar" text
 ) WITH (oids = false);
-
-INSERT INTO "user" ("id", "username", "password", "email") VALUES
-(1,	'paule',	'herman',	'paule.herman@gmail.com'),
-(2,	'theo',	'fenique',	'theo.fenique@gmail.com'),
-(3,	'aymeric',	'moehn',	'aymeric.moehn@gmail.com'),
-(4,	'samuel',	'belolo',	'samuel.belolo@gmail.com');
