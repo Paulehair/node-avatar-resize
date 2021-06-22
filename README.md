@@ -4,11 +4,23 @@ Infrastructure project for HETIC.
 
 ## Description
 
+We designed local infrastructure in this project.
+
 ### Local infrastructure schema
 ![local-infra](./docs/local-infra.jpg)
 
 ### Cloud infrastructure schema
 ![cloud-infra](./docs/cloud-infra.jpg)
+
+### How it works 
+
+1. client sends request to API
+2. API stocks image in redis
+3. API sends message to rabitMQ
+4. worker consumes rabbitMQ message
+5. worker crops image & stocks it in a docker volume also shared with API 
+6. worker stocks image name in database
+7. worker invalidate redis cache
 
 ## Conventions
 
@@ -34,75 +46,93 @@ A git hook is also defined in the .githooks directory to respect a certain branc
 
 You should call your branch feature|bugfix|improvement|release|hotfix|support/branch-subject
 
-## Usage
-
-### Prerequisites
+## Prerequisites
 
 * make 
 * docker 
 * docker-compose 
 
-### Start working on project
+## Start working on project
 
 If you are cloning project for the first time, run
 ```
 make init
 ```
 
-To start working on project run :
+To setup database, run : 
+```
+make database
+```
+
+To start working on project, run :
 ```
 make dev
 ```
-
-The app might crash the first time you run it. Simply kill the server using Ctrl-C, and restart it.
 
 If you want logs displayed on terminal run :
 ```
 make logs
 ```
 
-To stop containers run :
+To stop containers, run :
 ```
 make stop
 ```
 
-### Docker
+To remove containers, run :
+```
+make remove
+```
+
+## Try our project
+
+Use ./postman/collection.json file and import it into your postman app. 
+
+Make sure you change the image in POST request by one you have locally.
+
+You can also run : 
+
+```
+make test
+```
+
+## Docker
 
 There are 6 containers running.
 
-#### API : node:14.17
+### API : node:14.17
 
 Available on localhost:3000
 
-##### client connections:
+#### client connections:
 
 * host: 'api'
 * port: 3000
 
-#### Worker : node:14.17
+### Worker : node:14.17
 
 Available on localhost:3001
 
-##### client connections:
+#### client connections:
 
 * host: 'worker'
 * port: 3001
 
-#### redis:6.2 
+### redis:6.2 
 
 For caching. 
 
-##### client connections:
+#### client connections:
 
 * host: 'redis-server'
 * port: 6379
 * password: pwd-redis
 
-#### rabbitmq:3-management
+### rabbitmq:3-management
 
 Go to localhost:15672 and connect with admin credentials if you want to manage/monitor rabbitmq via UI.
 
-##### client connections:
+#### client connections:
 
 * host: 'beautiful-rabbit'
 * port: 5672
@@ -121,6 +151,16 @@ Worker user :
 
 You can check rabbitmq logs in .docker/rabbitmq/logs
 
-#### postgres:13.3
+### postgres:13.3
 
-To manage database with a UI, go to localhost:8080. You can import users via UI using data/database.sql
+#### client connections:
+
+* host: 'postgres'
+* port: 5432
+* user: root
+* password: root
+* db: db
+
+#### adminer:4.8.1
+
+To manage database with a UI, go to localhost:8080
